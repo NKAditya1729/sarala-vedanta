@@ -1,4 +1,4 @@
-# सरलवेदान्ताध्ययनम्
+# वेदान्तव्याख्यादीपिका
 
 Śaṅkara's bhāṣyas read through simple Sanskrit: one site that gathers the अध्ययनसाहाय्यम् study pages.
 

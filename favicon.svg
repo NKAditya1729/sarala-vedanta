@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="दीपः">
+  <circle cx="32" cy="32" r="31" fill="#faf1e4"/>
+  <path d="M32 7c6 8 9 13 9 18.5a9 9 0 0 1-18 0C23 20 26 15 32 7z" fill="#e8892b"/>
+  <path d="M32 15c3.2 4.6 4.6 7.6 4.6 10.6a4.6 4.6 0 0 1-9.2 0c0-3 1.4-6 4.6-10.6z" fill="#fbd36b"/>
+  <path d="M11 37h42c-1.5 9-9.6 15-21 15S12.5 46 11 37z" fill="#7a1f1f"/>
+  <path d="M8 35.5h48a2.5 2.5 0 0 1 0 5H8a2.5 2.5 0 0 1 0-5z" fill="#9b2b23"/>
+  <path d="M25 52h14l2.5 5h-19z" fill="#7a1f1f"/>
+</svg>

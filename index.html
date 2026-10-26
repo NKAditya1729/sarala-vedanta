@@ -16,6 +16,13 @@ a{color:inherit}
 header{border-bottom:1px solid var(--line);background:var(--paper)}
 .wrap{max-width:62rem;margin:0 auto;padding:0 20px}
 header .wrap{padding-top:42px;padding-bottom:30px;text-align:center}
+.invocation{margin:0 0 18px;color:var(--saffron);font-size:20px;letter-spacing:.02em}
+.gurus{display:flex;justify-content:center;gap:clamp(14px,4vw,36px);margin:0 auto 18px;padding:0;list-style:none}
+.gurus figure{margin:0;width:clamp(92px,22vw,132px);text-align:center}
+.gurus img{display:block;width:100%;aspect-ratio:1;border-radius:50%;object-fit:cover;border:3px solid var(--paper);box-shadow:0 0 0 2px var(--saffron),var(--shadow)}
+.gurus figcaption{margin-top:8px;font-size:clamp(13px,3vw,15px);line-height:1.45;color:var(--ink)}
+.shloka{margin:6px auto 26px;color:var(--accent);font-size:clamp(18px,4vw,22px);line-height:1.9}
+.rule{width:70px;height:1px;margin:0 auto 22px;background:var(--line)}
 .logo{display:block;margin:0 auto 10px;width:64px;height:64px}
 h1{margin:0;font-size:clamp(30px,6vw,44px);font-weight:400;color:var(--accent);letter-spacing:.01em}
 .lead{margin:10px auto 0;max-width:40rem;color:var(--muted);font-size:18px}
@@ -42,6 +49,14 @@ footer .wrap{padding-top:18px;padding-bottom:28px;text-align:center}
 <body>
 <header>
   <div class="wrap">
+    <p class="invocation">॥ श्रीगुरुभ्यो नमः ॥</p>
+    <ul class="gurus">
+      <li><figure><img src="images/shankara.jpg" alt="आदिशङ्कराचार्याः" width="400" height="400"><figcaption>श्रीशङ्करभगवत्पादाः</figcaption></figure></li>
+      <li><figure><img src="images/dayananda.jpg" alt="स्वामी दयानन्दसरस्वती" width="400" height="400"><figcaption>स्वामी दयानन्दसरस्वती</figcaption></figure></li>
+      <li><figure><img src="images/shankarananda.jpg" alt="स्वामी शङ्करानन्दसरस्वती" width="400" height="400"><figcaption>स्वामी शङ्करानन्दसरस्वती</figcaption></figure></li>
+    </ul>
+    <p class="shloka">सदाशिवसमारम्भां शङ्कराचार्यमध्यमाम् ।<br>अस्मदाचार्यपर्यन्तां वन्दे गुरुपरम्पराम् ॥</p>
+    <div class="rule"></div>
     <img class="logo" src="favicon.svg" alt="" width="64" height="64">
     <h1>वेदान्तव्याख्यादीपिका</h1>
     <p class="lead">शङ्कराचार्याणाम् भाष्याणि सरलसंस्कृतेन पठितुम् — मूलम्, पदच्छेदः, अन्वयः, व्याकरणम्, सरलार्थः, भाष्यम्, टीका च।</p>
@@ -84,7 +99,7 @@ footer .wrap{padding-top:18px;padding-bottom:28px;text-align:center}
   </div>
 </main>
 <footer>
-  <div class="wrap">मूलपाठः — <a href="https://advaitasharada.sringeri.net/">अद्वैतशारदा</a> (दक्षिणाम्नाय श्रीशारदापीठम्, शृङ्गेरी)</div>
+  <div class="wrap">मूलपाठः — <a href="https://advaitasharada.sringeri.net/">अद्वैतशारदा</a> (दक्षिणाम्नाय श्रीशारदापीठम्, शृङ्गेरी)<br>चित्राणि — <a href="https://arshavidya.in/">आर्षविद्यागुरुकुलम्</a>; श्रीशङ्करभगवत्पादाः — राजा रविवर्मा</div>
 </footer>
 </body>
 </html>

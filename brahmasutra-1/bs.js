@@ -12,7 +12,7 @@
     set(k, v) { try { localStorage.setItem('bs-' + k, JSON.stringify(v)); } catch { /* private mode */ } }
   };
   const state = {
-    comms: new Set(store.get('comms', ['BM'])), nm: store.get('nm', false), parshve: store.get('parshve', true),
+    comms: new Set(store.get('comms', ['RP'])), nm: store.get('nm', false), parshve: store.get('parshve', true),
     ex: store.get('ex', true), pada: store.get('pada', false), script: store.get('script', 'devanagari'),
     size: store.get('size', 20), study: store.get('study', false), tab: store.get('tab', 'sangati'), unit: 'BS.0'
   };

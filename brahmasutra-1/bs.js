@@ -47,6 +47,19 @@
   }
   const pair = (left, right) => `<div class="pair"><div class="left">${left}</div><div class="right">${right}</div></div>`;
 
+  /* ---------- अध्ययनसाहाय्यम् (in the पार्श्वे column, beside the bhāṣya it explains) ---------- */
+  const TABLABEL = Object.fromEntries(TABS);
+  function secHtml(s) {
+    const refs = (s.refs || []).length ? `<div class="refs">आधारः — ${s.refs.map(r => `<a href="#" data-ref="${r}">${LABEL[r.slice(0, 2)] || r} ${deva(r.replace(/^\D+_C\d+_(S\d+_)?[PQ]0*/, ''))}</a>`).join('')}</div>` : '';
+    return `<div class="sec">${s.head ? `<p class="sec-head">${esc(s.head)}</p>` : ''}${s.html}${refs}</div>`;
+  }
+  function studyBlock(u, pid) {
+    if (!state.study) return '';
+    const secs = ((u.study || {})[state.tab] || []).filter(s => s.para === pid);
+    if (!secs.length) return '';
+    return `<details class="vy-block st-block" open><summary>${TABLABEL[state.tab]}</summary>${secs.map(secHtml).join('')}</details>`;
+  }
+
   /* ---------- page ---------- */
   async function render() {
     const status = $('#status'); status.hidden = false;
@@ -55,13 +68,16 @@
     const comms = {};
     await Promise.all([...state.comms].map(k => load(`${state.unit}-${k}.json`).then(d => { comms[k] = d; }).catch(() => { comms[k] = {}; })));
     unitData = u;
+    const right = pid => studyBlock(u, pid) + commBlocks(comms, pid);
     let html = `<h1 class="chapter-heading">${esc(u.title)}</h1><p class="chapter-sub">${esc(u.sub)}</p>`;
+    const intro = studyBlock(u, 'intro');
+    if (intro) html += pair('<p class="bh-label">भाष्यात् पूर्वम् — ग्रन्थस्य उपक्रमः</p>', intro);
     const av = u.paras.filter(p => p.kind === 'avatarika');
-    for (const p of av) html += pair(`<p class="original avatarika" id="p-${p.id}">${sents(p.id, p.s)}</p>`, commBlocks(comms, p.id));
-    if (u.sutra) html += pair(`<div class="mula-box sutra-box" id="p-${u.sutra.id}">${sents(u.sutra.id, u.sutra.s)}<span class="verse-ref">${esc(u.ref)}</span></div>`, '');
+    for (const p of av) html += pair(`<p class="original avatarika" id="p-${p.id}">${sents(p.id, p.s)}</p>`, right(p.id));
+    if (u.sutra) html += pair(`<div class="mula-box sutra-box" id="p-${u.sutra.id}">${sents(u.sutra.id, u.sutra.s)}<span class="verse-ref">${esc(u.ref)}</span></div>`, studyBlock(u, u.sutra.id));
     if (state.nm && u.nm.length) html += pair('', `<details class="vy-block nm-block" open><summary>न्यायमाला</summary>${u.nm.map(commPara).join('')}</details>`);
     for (const p of u.paras.filter(p => p.kind !== 'avatarika'))
-      html += pair(`<p class="original" id="p-${p.id}">${sents(p.id, p.s)}</p>`, commBlocks(comms, p.id));
+      html += pair(`<p class="original" id="p-${p.id}">${sents(p.id, p.s)}</p>`, right(p.id));
     html += pager();
     const content = $('#content');
     content.innerHTML = html;
@@ -69,32 +85,8 @@
     status.hidden = true;
     document.title = `${u.title} — ब्रह्मसूत्रभाष्यम्`;
     $('#as-link').href = 'https://advaitasharada.sringeri.net/read/brahmasutra-bhashya/1/' + (u.sutra ? '#' + u.sutra.id : '');
-    sidebar(); study();
+    sidebar();
     store.set('last', state.unit);
-  }
-
-  /* ---------- अध्ययनसाहाय्यम् ---------- */
-  function study() {
-    const box = $('#study');
-    box.hidden = !state.study;
-    document.body.classList.toggle('study-open', state.study);
-    if (!state.study || !unitData) return;
-    $('#study-title').textContent = `अध्ययनसाहाय्यम् — ${unitData.title}`;
-    $('#study-tabs').innerHTML = TABS.map(([k, l]) => `<button data-tab="${k}" aria-pressed="${state.tab === k}">${l}</button>`).join('');
-    const secs = (unitData.study || {})[state.tab] || [];
-    const note = { sangati: 'भाष्यस्य प्रत्येकं वाक्यं क्रमेण विव्रियते — शङ्करभगवत्पादानां भाष्यं, व्याख्यातॄणां व्याख्यानानि च अनुसृत्य।',
-      sarala: 'भाष्यस्य भागशः सङ्ग्रहः सरलसंस्कृतेन।',
-      swami: 'पूज्यस्वामिदयानन्दसरस्वतीनां «ब्रह्मसूत्रम् (चतुस्सूत्री)» इति ग्रन्थे यथा भाष्यं विवृतं, तथा सरलसंस्कृतेन सङ्गृहीतम्।' }[state.tab];
-    let html = `<p class="study-note">${note}</p>`;
-    if (!secs.length) html += '<p class="todo">अयं भागः सज्जीक्रियते।</p>';
-    for (const s of secs) {
-      const where = s.para ? `<a href="#" data-go="${s.para}" data-n="${s.from || ''}">भाष्ये पश्यतु ↗</a>` : '';
-      const refs = (s.refs || []).length ? `<div class="refs">आधारः — ${s.refs.map(r => `<a href="#" data-ref="${r}">${LABEL[r.slice(0, 2)] || r} ${deva(r.replace(/^\D+_C\d+_(S\d+_)?[PQ]0*/, ''))}</a>`).join('')}</div>` : '';
-      html += `<div class="sec">${s.head ? `<div class="sec-head"><span>${esc(s.head)}</span>${where}</div>` : ''}${s.html}${refs}</div>`;
-    }
-    const body = $('#study-body');
-    body.innerHTML = html;
-    transliterate(box);
   }
   function flash(el) { if (!el) return; el.scrollIntoView({ block: 'center', behavior: 'smooth' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1600); }
 
@@ -121,7 +113,8 @@
       `<button data-nm aria-pressed="${state.nm}">न्यायमाला</button></div>` +
       `<div class="chip-row"><button class="ex-chip" data-ex aria-pressed="${state.ex}" title="व्याख्यानां वाक्यशः सरलव्याख्या">सरलव्याख्या</button>` +
       `<button class="parshve" aria-pressed="${state.parshve}" title="भाष्यं वामतः, व्याख्याः दक्षिणतः">पार्श्वे</button>` +
-      `<button class="study-chip" data-study aria-pressed="${state.study}">अध्ययनसाहाय्यम्</button></div>`;
+      `<button class="study-chip" data-study aria-pressed="${state.study}">अध्ययनसाहाय्यम्</button></div>` +
+      (state.study ? `<div class="chip-row study-tabs">${TABS.map(([k, l]) => `<button data-tab="${k}" aria-pressed="${state.tab === k}">${l}</button>`).join('')}</div>` : '');
     document.body.classList.toggle('parshve', state.parshve);
     document.body.classList.toggle('ex', state.ex);
     transliterate($('#chips'));
@@ -132,21 +125,16 @@
       if (b.dataset.comm) { const k = b.dataset.comm; state.comms.has(k) ? state.comms.delete(k) : state.comms.add(k); store.set('comms', [...state.comms]); render(); }
       else if ('nm' in b.dataset) { state.nm = !state.nm; store.set('nm', state.nm); render(); }
       else if ('ex' in b.dataset) { state.ex = !state.ex; store.set('ex', state.ex); render(); }
-      else if ('study' in b.dataset) { state.study = !state.study; store.set('study', state.study); study(); }
+      else if ('study' in b.dataset) { state.study = !state.study; store.set('study', state.study); render(); }
+      else if (b.dataset.tab) { state.tab = b.dataset.tab; state.study = true; store.set('tab', state.tab); render(); }
       else if (b.classList.contains('parshve')) { state.parshve = !state.parshve; store.set('parshve', state.parshve); }
       chips();
     });
-    $('#study-close').addEventListener('click', () => { state.study = false; store.set('study', false); chips(); study(); });
-    $('#study-tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.tab = b.dataset.tab; store.set('tab', state.tab); study(); $('#study-body').scrollTop = 0; });
-    $('#study-body').addEventListener('click', async e => {
-      const a = e.target.closest('a'); if (!a) return;
-      if (a.dataset.go) { e.preventDefault(); if (innerWidth <= 900) { state.study = false; chips(); study(); } flash(document.getElementById(a.dataset.n ? `s-${a.dataset.go}-${a.dataset.n}` : `p-${a.dataset.go}`)); }
-      if (a.dataset.ref) {
-        e.preventDefault(); const k = a.dataset.ref.slice(0, 2);
-        if (!state.comms.has(k)) { state.comms.add(k); store.set('comms', [...state.comms]); chips(); await render(); }
-        if (innerWidth <= 900) { state.study = false; chips(); study(); }
-        flash(document.getElementById('c-' + a.dataset.ref));
-      }
+    $('#content').addEventListener('click', async e => {
+      const a = e.target.closest('a[data-ref]'); if (!a) return;
+      e.preventDefault(); const k = a.dataset.ref.slice(0, 2);
+      if (!state.comms.has(k)) { state.comms.add(k); store.set('comms', [...state.comms]); chips(); await render(); }
+      flash(document.getElementById('c-' + a.dataset.ref));
     });
     const pada = $('#pada-toggle');
     const applyPada = () => { document.body.classList.toggle('pada', state.pada); pada.setAttribute('aria-pressed', state.pada); };

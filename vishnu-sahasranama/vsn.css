@@ -205,7 +205,9 @@ body.study-open main{margin-right:min(46vw,680px)}
 .title-line{text-align:center;color:var(--accent);margin:4px 0;font-size:calc(var(--font-size)*1.05)}
 .trad-head{margin:26px 0 4px;color:var(--saffron);font-size:calc(var(--font-size)*.95)}
 .trad-head small{display:block;color:var(--muted);font-size:13px}
-.original b,.quote b{font-weight:700;color:var(--accent)}
+.original b,.quote b{font-weight:700}
+.pk{color:var(--blue);font-weight:600}
+.legend-pk{color:var(--blue);font-weight:600}
 .slip{border-bottom:1.5px dotted var(--saffron);cursor:help}
 body.show-print .slip::after{content:' [' attr(data-pr) ']';font-size:.72em;color:var(--saffron)}
 .pg{float:right;margin:0 0 0 10px;font-size:12px;color:#a8998a;font-family:Georgia,serif;line-height:2.4}

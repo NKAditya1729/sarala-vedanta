@@ -12,13 +12,13 @@
     bhashya: store.get('bhashya', true), print: store.get('print', false), unit: 'VSN.0', verse: null };
   let index = null;
   const cache = {};
-  const load = f => (cache[f] = cache[f] || fetch('data/' + f + '?v=1').then(r => { if (!r.ok) throw new Error(f); return r.json(); }));
+  const load = f => (cache[f] = cache[f] || fetch('data/' + f + '?v=2').then(r => { if (!r.ok) throw new Error(f); return r.json(); }));
 
   /* ---------- text ---------- */
   function item(x) {
     if (typeof x === 'string') return esc(x);
     const [sj, pd, m, at] = x;
-    let h = `<span class="w${m ? ' m' : ''}"><span class="sj">${esc(sj)}</span><span class="pd">${esc(pd)}</span></span>`;
+    let h = `<span class="w${m ? ' m' : ''}${at && at.k ? ' pk' : ''}"><span class="sj">${esc(sj)}</span><span class="pd">${esc(pd)}</span></span>`;
     if (at && at.b) h = `<b>${h}</b>`;
     if (at && 'pr' in at) h = `<span class="slip" data-pr="${esc(at.pr || '—')}" title="${at.pr ? 'मुद्रितम् — ' + esc(at.pr) : 'मुद्रिते लुप्तम्; योजितम्'}">${h}</span>`;
     return h;

@@ -8,7 +8,7 @@ const deva=s=>String(s).replace(/\d/g,c=>'०१२३४५६७८९'[c]);
 const base=new URL('.',document.currentScript.src), cache=new Map(), studies=new Map(), research=new Map(), loaded=new Map();
 const panelLayers=new Map();
 const media=matchMedia('(max-width:900px)');
-let sourceClient=LiveSource,storedClient=null,commentaries=null;
+let sourceClient=LiveSource,storedClient=null,commentaries=null,swamiUnits=new Set();
 // The page's brāhmaṇa (BU 2.4 unless the shell says otherwise): its lessons, heading and colophon anchors.
 const SCOPE=document.body.dataset.scope||'2.4',HEAD=document.body.dataset.heading||'BR_C02_S04',COLOPHON=document.body.dataset.colophon||'BR_C02_S04_E010',INTRO=SCOPE+'.0';
 // Māṇḍūkya prakaraṇa pages (R-024): units 1.0 (उपोद्घातः), 1.V01 … (मन्त्राः), 1.K01 … (कारिकाः), 4.Z.
@@ -134,14 +134,15 @@ async function fillStudySection(details){const key=details.dataset.lazyStudy,bod
 function hydrated(id){return results[reading.units.findIndex(x=>x.id===id)]?.payload?.unit;}
 // The panel shows one part at a time; the tabs say whether the mūla or the bhāṣya is being studied.
 function studyBody(u){
- panelLayers.clear();const hu=hydrated(panelId),hasMula=!!u.mula,hasTika=!!commentaries?.hasTika?.(panelId);if(!hasMula&&studyPart==='mula')studyPart='bhashya';if(!hasTika&&studyPart==='tika')studyPart='bhashya';
- const tabList=[...(hasMula?[['mula','मूलम्']]:[]),['bhashya','भाष्यम्'],...(hasTika?[['tika','आनन्दगिरिटीका']]:[])];
+ panelLayers.clear();const hu=hydrated(panelId),hasMula=!!u.mula,hasTika=!!commentaries?.hasTika?.(panelId);if(!hasMula&&studyPart==='mula')studyPart='bhashya';if(!hasTika&&studyPart==='tika')studyPart='bhashya';const hasSwami=swamiUnits.has(swamiId(panelId));if(!hasSwami&&studyPart==='swami')studyPart='bhashya';
+ const tabList=[...(hasMula?[['mula','मूलम्']]:[]),['bhashya','भाष्यम्'],...(hasTika?[['tika','आनन्दगिरिटीका']]:[]),...(hasSwami?[['swami','स्वामिविवरणम्']]:[])];
  const tabs=tabList.length>1?`<div class="study-tabs" role="tablist">${tabList.map(([k,n])=>`<button role="tab" data-study-part-tab="${k}" aria-selected="${studyPart===k}">${n}</button>`).join('')}</div>`:'';
  let html=tabs;
  if(studyPart==='mula'){const layers=UnitReader.mulaLayers(u,{lazy:true}),context=UnitReader.prasanga(u,'panel');
   if(context)layers.unshift({name:'प्रसङ्गः',content:context});
   html+=`<section class="study-group" data-part="mula">${layers.map((l,i)=>studySection(l,i,'mula-study')).join('')}</section>`;}
  else if(studyPart==='tika')html+=`<section class="study-group" data-part="tika"><p class="study-flow">टीका आनीयते…</p></section>`;
+ else if(studyPart==='swami')html+=`<section class="study-group" data-part="swami"><p class="study-flow">स्वामिविवरणम् आनीयते…</p></section>`;
  else{const layers=UnitReader.bhashyaLayers(u,{padaccheda:pada,lazy:true}),context=UnitReader.prasanga(u,'panel-bhashya');
   if(context)layers.unshift({name:hasMula?'प्रसङ्गः (मूलम्-पटले उक्तः)':'प्रसङ्गः',content:context});
   /* R-021 (R1-069): the मूलम् tab already opened प्रसङ्गः; the भाष्यम् tab starts at its first own section */
@@ -165,7 +166,7 @@ async function openLexicon(id,{push=true}={}){
 function panelMode(){const modal=!!panelId&&media.matches;$('#study-dialog').setAttribute('role',modal?'dialog':'region');if(modal)$('#study-dialog').setAttribute('aria-modal','true');else $('#study-dialog').removeAttribute('aria-modal');$('.layout').inert=modal;$('.topbar').inert=modal;}
 function openFrame(id,asResearch){
  const sourceTop=section(id)?.getBoundingClientRect().top;if(!panelId||!$('#study-dialog').contains(document.activeElement))lastFocus=document.activeElement;panelId=id;panelResearch=asResearch;document.body.classList.add('study-open');$('#study-dialog').hidden=false;if(sourceTop!=null&&!media.matches)window.scrollBy({top:section(id).getBoundingClientRect().top-sourceTop,behavior:'instant'});
- $('#study-title').textContent=unitName(id)+' · '+(asResearch?'विमर्शः':(studyPart==='tika'?'आनन्दगिरिटीका':id!==INTRO&&studyPart==='mula'?'मूलम्':'भाष्यम्')+' · अध्ययनसाहाय्यम्');
+ $('#study-title').textContent=unitName(id)+' · '+(asResearch?'विमर्शः':(studyPart==='tika'?'आनन्दगिरिटीका':studyPart==='swami'?'स्वामिविवरणम्':id!==INTRO&&studyPart==='mula'?'मूलम्':'भाष्यम्')+' · अध्ययनसाहाय्यम्');
  $$('.study-pill').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.openStudy===id)));panelMode();
 }
 async function openStudy(id,{asResearch=false,anchor='',push=true,scroll=false,part=null}={}){
@@ -176,6 +177,7 @@ async function openStudy(id,{asResearch=false,anchor='',push=true,scroll=false,p
  try{const u=await studyUnit(id,asResearch);if(request!==panelRequest)return;
   $('#drawer-content').innerHTML=asResearch?researchBody(u):studyBody(u);
   if(!asResearch&&studyPart==='tika')await fillTika(id,request);
+  if(!asResearch&&studyPart==='swami')await fillSwami(id,request);
   // Research identifiers remain in the DOM for stable links, never in learner prose.
   for(const el of $$('.research-id,pre.compound-tree',$('#drawer-content')))el.hidden=true;
   window.ScriptDisplay?.apply();$('#study-dialog').scrollTop=0;
@@ -184,6 +186,9 @@ async function openStudy(id,{asResearch=false,anchor='',push=true,scroll=false,p
 }
 // The ṭīkā of this mantra, with its सरलव्याख्या, inside अध्ययनसाहाय्यम् (Aditya, 2026-10-24).
 async function fillTika(id,request){const box=$('#drawer-content .study-group[data-part="tika"]');if(!box)return;try{const html=await commentaries.tikaFor(id);if(request!==panelRequest)return;box.innerHTML=html;window.ScriptDisplay?.apply();}catch{if(request===panelRequest)box.innerHTML='<p class="source-status">टीका अधुना न प्राप्ता।</p>';}}
+// स्वामिविवरणम्: Swamiji's classes on this unit, in his order, in simple Sanskrit (Aditya, 2026-10-30); one section open at a time.
+const swamiId=id=>(document.body.dataset.unitPrefix?document.body.dataset.unitPrefix+'.':'')+id;   // reading ids are '1.0'; files are 'MK.1.0'
+async function fillSwami(id,request){const box=$('#drawer-content .study-group[data-part="swami"]');if(!box)return;try{const d=await json(manifest.swami.replace(/index\.json$/,swamiId(id)+'.json'));if(request!==panelRequest)return;let k=0;box.innerHTML=`<p class="swami-intro">${esc(d.teacher)} · ${esc(d.source)}</p>`+d.chapters.map(ch=>`<h3 class="swami-chapter">${esc(ch.title)}</h3>`+ch.sections.map(s=>studySection({name:s.head,content:`<p class="swami-src">कक्षाः — ${esc(s.classes)}</p>${s.html}`},k++,'swami-study')).join('')).join('');window.ScriptDisplay?.apply();}catch{if(request===panelRequest)box.innerHTML='<p class="source-status">स्वामिविवरणम् अधुना न प्राप्तम्।</p>';}}
 // Vārtika units and other non-mantra study open in the same right-hand panel (Aditya, 2026-10-23).
 function openCustomPanel(title,html){if(!panelId)lastFocus=document.activeElement;++panelRequest;panelId='custom';panelResearch=false;document.body.classList.add('study-open');$('#study-dialog').hidden=false;$('#study-title').textContent=title;$('#drawer-content').innerHTML=html;panelMode();window.ScriptDisplay?.apply();$('#study-dialog').scrollTop=0;}
 function closeStudy({push=true,focus=true}={}){const id=panelId;if(!id)return;if(id==='custom'){++panelRequest;panelId=null;document.body.classList.remove('study-open');$('#study-dialog').hidden=true;panelMode();if(focus&&lastFocus?.isConnected)lastFocus.focus({preventScroll:true});return;}const sourceTop=section(id)?.getBoundingClientRect().top;++panelRequest;panelId=null;panelResearch=false;document.body.classList.remove('study-open');$('#study-dialog').hidden=true;panelMode();if(sourceTop!=null&&!media.matches)window.scrollBy({top:section(id).getBoundingClientRect().top-sourceTop,behavior:'instant'});$$('.study-pill').forEach(b=>b.setAttribute('aria-expanded','false'));setRoute(id,'','',push);markActive(id);if(focus){const target=lastFocus?.isConnected?lastFocus:section(id)?.querySelector('.study-pill');target?.focus({preventScroll:true});}}
@@ -268,7 +273,7 @@ applyColors();applySize();
 (async()=>{
  try{manifest=await json('runtime/manifest.json');if(manifest.source_packs){storedClient=StoredSource.createClient({entries:manifest.source_packs,base:base.href});sourceClient=LiveSource.createClient({stored:storedClient});}reading=await json(manifest.reading||'runtime/reading.json');
   reading.units.sort((a,b)=>Number(a.id.split('.').at(-1))-Number(b.id.split('.').at(-1)));nav();
-  const initialHash=location.hash;await loadSource();if(manifest.commentary_pairs){commentaries=MaitreyiCommentaries.create({stored:storedClient,pairs:await json(manifest.commentary_pairs),closeStudy:()=>closeStudy({push:false,focus:false}),openStudy:id=>openStudy(id,{push:false}),openPanel:(title,html)=>openCustomPanel(title,html),activeId:()=>active,panelUnit:()=>panelId});}if(document.fonts?.ready)await document.fonts.ready;ready=true;document.body.dataset.readerReady='true';
+  const initialHash=location.hash;await loadSource();if(manifest.commentary_pairs){commentaries=MaitreyiCommentaries.create({stored:storedClient,pairs:await json(manifest.commentary_pairs),closeStudy:()=>closeStudy({push:false,focus:false}),openStudy:id=>openStudy(id,{push:false}),openPanel:(title,html)=>openCustomPanel(title,html),activeId:()=>active,panelUnit:()=>panelId});}if(manifest.swami)try{swamiUnits=new Set((await json(manifest.swami)).units||[]);}catch{}if(document.fonts?.ready)await document.fonts.ready;ready=true;document.body.dataset.readerReady='true';
   // The first source rendering must not replace a shared deep link with the scroll-spy route.
   if(initialHash&&location.hash!==initialHash)history.replaceState(null,'',initialHash);
   await route({scroll:!!initialHash||!!document.body.dataset.unitRoute});requestScrollSpy();

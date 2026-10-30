@@ -146,3 +146,7 @@ body.maitreyi[data-script=malayalam]{font-family:'Noto Serif Malayalam','Malayal
 @media(max-width:900px){.maitreyi .lesson-link{min-height:44px;font-size:14px}}
 .maitreyi .lesson-group{grid-column:1/-1;margin:10px 0 2px;font-size:13px;color:var(--muted);font-weight:600}
 body[data-unit-prefix="MK"] .mula,body[data-unit-prefix="MK"] .reading-bhashya{white-space:pre-line}
+/* स्वामिविवरणम् (R-024, 2026-10-30) */
+.maitreyi .swami-intro{color:var(--muted);font-size:15px;margin:4px 2px 10px}
+.maitreyi #drawer-content h3.swami-chapter{color:var(--accent);font-size:18px;font-weight:600;margin:18px 2px 6px;padding-top:8px;border-top:2px solid var(--line)}
+.maitreyi .swami-src{color:var(--muted);font-size:14px;margin:0 0 8px}

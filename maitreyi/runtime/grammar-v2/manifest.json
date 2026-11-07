@@ -1,0 +1,7 @@
+{
+ "schema": "gv2-manifest/1",
+ "units": {
+  "BU.2.4.5": "runtime/grammar-v2/BU.2.4.5.json"
+ },
+ "common": "runtime/grammar-v2/common.json"
+}

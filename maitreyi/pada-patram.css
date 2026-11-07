@@ -46,3 +46,16 @@ body.no-colors .gv-pilcrow{opacity:.35}
  .gv-l3 td:first-child{white-space:normal}
  body.study-open .gv-card{font-size:calc(var(--font-size,20px)*.85)}
 }
+.gv-wait{color:var(--muted,#777);font-size:.9em}
+.gv-retry{font:inherit;font-size:.9em;border:1px solid var(--line,#ccc);border-radius:12px;background:none;color:var(--link,#1a5fb4);cursor:pointer;padding:1px 8px}
+.gv-word:focus{outline:2px solid var(--link,#1a5fb4);outline-offset:3px}
+.gv-grip{display:none}
+/* mobile: a bottom sheet — header and स्तरः १ visible, the reading above (TASKS R-030 D3) */
+@media(max-width:480px){
+ body.gv-sheet .study-drawer{inset:auto 0 0 0!important;top:auto!important;height:78dvh;max-height:96dvh;border-radius:14px 14px 0 0;border-top:1px solid var(--line,#ccc);box-shadow:0 -6px 24px #0003;overflow-y:auto}
+ body.gv-sheet.study-open{overflow:auto}
+ body.gv-sheet .gv-grip{display:block;position:sticky;top:0;height:22px;margin:-10px -20px 6px;background:var(--bg,#fff);cursor:ns-resize;touch-action:none;z-index:2}
+ body.gv-sheet .gv-grip:after{content:"";display:block;width:44px;height:5px;border-radius:3px;background:var(--line,#bbb);margin:9px auto 0}
+ .gv-pilcrow{padding:14px 16px;margin:0 -12px;min-width:44px}
+ .gv-choices button,.gv-nav button{min-height:44px;min-width:44px;padding:6px 14px}
+}

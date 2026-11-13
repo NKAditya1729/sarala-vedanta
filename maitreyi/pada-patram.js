@@ -8,6 +8,8 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const deva=s=>String(s??'').replace(/[0-9]/g,c=>'०१२३४५६७८९'[c]);
 const LAKARA={'लट्':'वर्तमानकालः','लिट्':'परोक्षभूतकालः','लुट्':'अनद्यतनभविष्यत्कालः','लृट्':'भविष्यत्कालः','लोट्':'आज्ञा/प्रार्थना','लङ्':'अनद्यतनभूतकालः','विधिलिङ्':'विधिः/सम्भावना','लुङ्':'भूतकालः','लृङ्':'हेतुहेतुमद्भावः','आशीर्लिङ्':'आशीः'};
 const ISSUE='https://github.com/NKAditya1729/vedantic-archive/issues/new';
+// Levels shown (Aditya, 2026-11-13): स्तरः १ and स्तरः २ only for now; प्रक्रिया, उदाहरणानि, वाक्यरचना return later.
+const SHOW={l3:false,ex:false,sent:false};
 const LOADING='<p class="gv-wait">आनीयते…</p>',FAILED='<p class="gv-wait">अधुना न लभ्यते — <button class="gv-retry" data-gv-retry>पुनः प्रयतताम्</button></p>';
 const script=document.currentScript,base=new URL('runtime/grammar-v2/',new URL('.',script?.src||location.href)),cache=new Map();
 let manifest=null,common=null,hooks={},history=[],current=null,origin=null;
@@ -79,8 +81,8 @@ function cardHTML(u,oid){
  const kosha=L.kosha?rich(L.kosha):'—';
  const l1=tin?[row('अर्थः',rich(o.artha)),row('धातुः',dh),row('अवयवाः','—'),row('पदजातिः',esc(L.padajati)),row('लकारः · पुरुषः · वचनम्',`${esc(t.lakara)} (${esc(LAKARA[t.lakara]||'')}) · ${esc(t.purusha)} · ${esc(t.vacana)}`),row('प्रयोगः',rich(o.prayoga)),row('सम्बन्धः',rel),row('प्रयोगभूमिका','—'),row('कोशः',kosha)]
   :[row('अर्थः',rich(o.artha)),row('धातुः',['कृदन्तम्','समस्तपदम्'].includes(L.cls)?dh:'—'),row('अवयवाः',L.cls==='समस्तपदम्'?members:'—'),row('पदजातिः',esc(L.padajati)),row('लिङ्गम्',linga),row('विभक्तिः · वचनम्',avy?'—':`${esc(t.vibhakti)} · ${esc(t.vacana)}`),row('विभक्तिः किमर्थम्?',avy?'—':vk),row('सम्बन्धः',rel),row('प्रयोगभूमिका',avy?(o.bhumika?rich(o.bhumika):'—'):'—'),row('कोशः',kosha)];
- const sent=u.sentence_ids.includes(o.sent)?level('sent','वाक्यरचना',LOADING,false,'sent'):'';
- return `<article class="gv-card" role="dialog" aria-label="${esc(o.pada)} — व्याकरणपत्रम्" data-gv-card="${esc(oid)}">${head}${level('l1','स्तरः १ · पदपरिचयः',table(l1),true)}${level('l2','स्तरः २ · निष्पत्तिः',LOADING,false,'l2')}${level('l3','स्तरः ३ · प्रक्रिया',LOADING,false,'l3')}${level('ex','उदाहरणानि',LOADING,false,'ex')}${sent}${footer(oid)}</article>`;
+ const sent=SHOW.sent&&u.sentence_ids.includes(o.sent)?level('sent','वाक्यरचना',LOADING,false,'sent'):'';
+ return `<article class="gv-card" role="dialog" aria-label="${esc(o.pada)} — व्याकरणपत्रम्" data-gv-card="${esc(oid)}">${head}${level('l1','स्तरः १ · पदपरिचयः',table(l1),true)}${level('l2','स्तरः २ · निष्पत्तिः',LOADING,false,'l2')}${SHOW.l3?level('l3','स्तरः ३ · प्रक्रिया',LOADING,false,'l3'):''}${SHOW.ex?level('ex','उदाहरणानि',LOADING,false,'ex'):''}${sent}${footer(oid)}</article>`;
 }
 function l2HTML(u,oid,L,J){const o=u.occ[oid],F=L.forms[o.form]||{},tin=L.cls==='तिङन्तम्';
  const slotVal=s=>{const k=s.replace('*','');
@@ -120,7 +122,7 @@ function junctionHTML(u,J,jid){const j=J[jid];if(!j)return '<p>—</p>';
  const printed=j.status==='विसन्धिः'?`विसन्धिः (मुद्रणे) — मूले ‘${esc(j.surface)}’; सन्धौ ‘${esc(j.joined)}’`:j.status==='अवसानम्'?'अवसानम् — विरामः':j.status==='विकल्पः'?`मुद्रणे वैकल्पिकम् रूपम् ‘${esc(j.surface)}’`:`मुद्रणे ‘${esc(j.surface)}’`;
  return `<article class="gv-card gv-junction" role="dialog" aria-label="${esc(j.l)} + ${esc(j.r)} — सन्धिपत्रम्"><header class="gv-head"><h3 class="gv-word" tabindex="-1">${esc(j.l)} + ${esc(j.r)} → ${esc(j.joined)}</h3><p class="gv-loc">${esc(u.label)} · ${esc(j.side)}, वाक्यम् ${sentNo(j.sent)} · ${printed}</p><p class="gv-flagline">${flagBadge('निश्चितम्')}</p></header>
  ${table([row('स्तरः १ · नाम',`${esc(j.group)}${j.clause?' — '+esc(j.clause):''}`),row('स्तरः २ · चरणाः',steps),row('वैकल्पिकम्',j.alts?.length?j.alts.map(esc).join(' · '):'नास्ति')])}
- ${level('j3','स्तरः ३ · प्रक्रिया',l3,true)}${level('jex','उदाहरणानि',same.length?`<p>अयम् एव सन्धिः — अत्रैव: ${same.map(([k,x])=>`<a href="#" data-gv-junction="${esc(k)}">${esc(x.l)} + ${esc(x.r)}</a>`).join(' · ')}</p>`:'<p>—</p>',false)}
+ ${SHOW.l3?level('j3','स्तरः ३ · प्रक्रिया',l3,true):''}${!SHOW.ex?'':level('jex','उदाहरणानि',same.length?`<p>अयम् एव सन्धिः — अत्रैव: ${same.map(([k,x])=>`<a href="#" data-gv-junction="${esc(k)}">${esc(x.l)} + ${esc(x.r)}</a>`).join(' · ')}</p>`:'<p>—</p>',false)}
  <p class="gv-more">पदे: ${occLink(j.left,j.l)} · ${occLink(j.right,j.r)}</p>${footer(jid)}</article>`;}
 
 // ---------------------------------------------------------------- indices
@@ -133,7 +135,7 @@ function indexHTML(u,J,side){
  const pada=Object.entries(by).map(([lid,ks])=>ks.length===1?occLink(ks[0],u.occ[ks[0]].pada):`<details class="gv-ix gv-inline"><summary>${[...new Set(ks.map(k=>u.occ[k].pada))].map(esc).join(' / ')} ×${deva(ks.length)}</summary>${ks.map(k=>occLink(k,u.occ[k].pada+' ('+sentNo(u.occ[k].sent)+')')).join(' · ')}</details>`).join(' · ');
  const sents=u.sentence_ids.filter(s=>s.includes(side==='मूलम्'?'.M.':'.B.')).map(s=>`<a href="#" data-gv-sent="${esc(s)}">¶ ${sentNo(s)}</a>`).join(' · ');
  const sub=(t,b,open)=>`<details class="study-subsection gv-sub"${open?' open':''}><summary>${t}</summary><div class="study-subsection-content">${b}</div></details>`;
- return `<div data-gv-unit="${esc(u.unit)}"><p class="gv-note">प्रतिपदम् व्याकरणपत्रम् — पाठे यत् किमपि पदम् स्पृशतु, अथवा अत्र चिनोतु।</p>${sub('पदविवरणम्',`<p class="gv-tokens">${pada}</p>`,true)}${sub('सन्धिविवरणम्',sandhi||'—')}${sub('समासः',`<p>${sam}</p>`)}${sub('वाक्यरचना',`<p>${sents}</p>`)}<p class="gv-more"><a href="#" data-gv-indices>व्याकरणसूच्यः ↗</a> · <a href="#" data-gv-pari>परिभाषासूची ↗</a></p></div>`;}
+ return `<div data-gv-unit="${esc(u.unit)}"><p class="gv-note">प्रतिपदम् व्याकरणपत्रम् — पाठे यत् किमपि पदम् स्पृशतु, अथवा अत्र चिनोतु।</p>${sub('पदविवरणम्',`<p class="gv-tokens">${pada}</p>`,true)}${sub('सन्धिविवरणम्',sandhi||'—')}${sub('समासः',`<p>${sam}</p>`)}${SHOW.sent?sub('वाक्यरचना',`<p>${sents}</p>`):''}<p class="gv-more"><a href="#" data-gv-indices>व्याकरणसूच्यः ↗</a> · <a href="#" data-gv-pari>परिभाषासूची ↗</a></p></div>`;}
 async function indicesHTML(u){const dir=manifest.indices[u.unit.split('.').slice(1,3).join('.')];
  const [dh,af,su,pa,fq]=await Promise.all(['dhatu','pratyaya','sutra','pattern','frequency'].map(n=>json(dir+n+'.json')));
  const link=ids=>ids.filter(i=>u.occ[i]).map(i=>occLink(i,u.occ[i].pada)).join(' · ')||'—';
@@ -207,7 +209,7 @@ document.addEventListener('pointerdown',e=>{const g=e.target.closest('.gv-grip')
  const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);};addEventListener('pointermove',mv);addEventListener('pointerup',up);});
 
 // ¶ after every bhāṣya sentence of a covered unit (opens its वाक्यरचनापत्रम्)
-async function markSentences(rootEl){await ready;for(const s of rootEl.querySelectorAll('.bhashya-sentence[id]')){if(s.nextElementSibling?.classList.contains('gv-pilcrow'))continue;const uid=s.id.replace(/\.B\..*$/,'');if(!manifest.units[uid])continue;s.insertAdjacentHTML('afterend',`<button class="gv-pilcrow" data-gv-mark="${esc(s.id)}" data-gv-unit="${esc(uid)}" aria-label="वाक्यरचना" title="वाक्यरचना">¶</button>`);}}
+async function markSentences(rootEl){if(!SHOW.sent)return;await ready;for(const s of rootEl.querySelectorAll('.bhashya-sentence[id]')){if(s.nextElementSibling?.classList.contains('gv-pilcrow'))continue;const uid=s.id.replace(/\.B\..*$/,'');if(!manifest.units[uid])continue;s.insertAdjacentHTML('afterend',`<button class="gv-pilcrow" data-gv-mark="${esc(s.id)}" data-gv-unit="${esc(uid)}" aria-label="वाक्यरचना" title="वाक्यरचना">¶</button>`);}}
 function watch(){const el=document.getElementById('lesson-content');if(!el)return;let t=0;new MutationObserver(()=>{clearTimeout(t);t=setTimeout(()=>markSentences(el),60);}).observe(el,{childList:true,subtree:true});markSentences(el);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watch);else watch();
 

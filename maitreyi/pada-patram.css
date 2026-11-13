@@ -2,6 +2,7 @@
 .gv-card{font-size:calc(var(--font-size,20px)*.9);line-height:1.75}
 .gv-head{border-bottom:1px solid var(--line,#ddd);padding-bottom:8px;margin-bottom:10px}
 .gv-word{font-size:1.45em;margin:0 0 4px;font-weight:700}
+.gv-gist{margin:2px 0 6px;font-size:1.02em;line-height:1.6}
 .gv-loc{margin:0;color:var(--muted,#666);font-size:.88em}
 .gv-loc b{color:var(--ink,inherit)}
 .gv-flagline{margin:4px 0 0;font-size:.85em;color:var(--muted,#666)}

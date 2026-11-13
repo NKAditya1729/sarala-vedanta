@@ -61,11 +61,16 @@ function junctionLine(J,jid){const j=J[jid];if(!j)return '';
  let printed='';if(j.status==='विसन्धिः')printed=` — विसन्धिः (मुद्रणे); सन्धौ ‘${esc(j.joined)}’`;else if(j.status==='विकल्पः')printed=' — मुद्रणे वैकल्पिकम् रूपम्';
  return `<a href="#" class="gv-j" data-gv-junction="${esc(jid)}">‘${esc(j.l)} ${esc(j.r)}’</a> — ${esc(j.group)}${j.clause?': '+esc(j.clause):''}${j.steps.length?' — '+rich(j.steps.map(s=>s[0]).join(' · ')):''}${printed}`;}
 
+// one plain line before the levels, as ashtadhyayi.com gives a sūtra's सरलार्थः: the meaning, then the word's kind and form
+function gist(o,L,t){const a=String(o.artha||'').replace(/<span class="gv-src">[^]*?<\/span>/g,'').replace(/<[^>]+>/g,'').trim();
+ const kind=L.cls==='तिङन्तम्'?`क्रियापदम्, ${t.lakara||''} ${t.purusha||''} ${t.vacana||''}`:L.cls==='अव्ययम्'?'अव्ययम्':`${L.cls}, ${t.vibhakti||''} ${t.vacana||''}`;
+ return `${esc(a)} — ${esc(kind.replace(/\s+/g,' ').trim())}।`;}
+
 // ---------------------------------------------------------------- the card (SPEC-v2 §4) — स्तरः १ needs no lemma file
 function cardHTML(u,oid){
  const o=u.occ[oid],L=u.lemma1[o.lemma],t=L.tags[o.form]||{},tin=L.cls==='तिङन्तम्',avy=L.cls==='अव्ययम्';
  const freq=L.n?` · अस्मिन् ग्रन्थे ${deva(L.n)} वारम्`:'';
- const head=`<header class="gv-head"><h3 class="gv-word" tabindex="-1">${esc(o.pada)}</h3><p class="gv-loc">${o.loc}</p><p class="gv-flagline">${flagBadge(o.flag)}${freq}</p></header>`;
+ const head=`<header class="gv-head"><h3 class="gv-word" tabindex="-1">${esc(o.pada)}</h3><p class="gv-gist">${gist(o,L,t)}</p><p class="gv-loc">${o.loc}</p><p class="gv-flagline">${flagBadge(o.flag)}${freq}</p></header>`;
  const linga=avy||tin?'—':(String(L.linga||'').startsWith('त्रिलिङ्गम्')?`त्रिलिङ्गम् (अत्र ${esc(t.linga)})`:esc(t.linga||L.linga||'—'));
  const vk=o.vk?`${esc(o.vk[0])} — ${rich(o.vk[1])}${o.vk[2]?` (यथा ${rich(o.vk[2])})`:''}`:'—';
  const rel=o.rel?`${esc(o.rel[0])} — ${rich(o.rel[1])}${o.rel[2]&&u.occ[o.rel[2]]?' '+occLink(o.rel[2],'↗'):''}`:'—';
